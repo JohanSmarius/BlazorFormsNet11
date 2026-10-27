@@ -1,5 +1,7 @@
-using CustomerApp.Client.Pages;
+using CustomerApp.Client.Models;
+using CustomerApp.Client.Services;
 using CustomerApp.Components;
+using CustomerApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddValidation();
+builder.Services.AddSingleton<InviteCodeStore>();
+builder.Services.AddScoped<IRegistrationService, ServerRegistrationService>();
 
 var app = builder.Build();
 
@@ -21,6 +27,14 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.UseHttpsRedirection();
 
 app.MapStaticAssets();
+
+// RegistrationModel is validated automatically (AddValidation) before this handler runs.
+app.MapPost("/api/registrations", async (RegistrationModel model, IRegistrationService registrationService, CancellationToken cancellationToken) =>
+{
+    var result = await registrationService.RegisterAsync(model, cancellationToken);
+    return result.Succeeded ? Results.Ok() : Results.ValidationProblem(result.Errors);
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

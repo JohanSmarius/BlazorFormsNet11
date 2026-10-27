@@ -1,0 +1,125 @@
+@page "/register"
+@using CustomerApp.Client.Models
+@using CustomerApp.Client.Services
+@implements IDisposable
+@inject IRegistrationService RegistrationService
+
+<PageTitle>Register</PageTitle>
+
+<h1>Register</h1>
+
+@if (registeredName is not null)
+{
+    <div class="alert alert-success" role="status">
+        Thank you @registeredName, your registration was successful.
+    </div>
+}
+else
+{
+    <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit" FormName="register">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+
+        <div class="mb-3">
+            <label for="firstName" class="form-label">First name</label>
+            <InputText id="firstName" class="form-control" autocomplete="given-name" @bind-Value="Model.FirstName" />
+            <ValidationMessage For="() => Model.FirstName" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label for="lastName" class="form-label">Last name</label>
+            <InputText id="lastName" class="form-control" autocomplete="family-name" @bind-Value="Model.LastName" />
+            <ValidationMessage For="() => Model.LastName" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <InputText id="email" type="email" class="form-control" autocomplete="email" @bind-Value="Model.Email" />
+            <ValidationMessage For="() => Model.Email" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label for="inviteCode" class="form-label">Invite code</label>
+            <InputText id="inviteCode" class="form-control" autocomplete="off" @bind-Value="Model.InviteCode" />
+            <ValidationMessage For="() => Model.InviteCode" class="text-danger" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+            @(isSubmitting ? "Registering..." : "Register")
+        </button>
+    </EditForm>
+}
+
+@code {
+    private RegistrationModel Model { get; set; } = new();
+    private EditContext editContext = default!;
+    private ValidationMessageStore messageStore = default!;
+    private bool isSubmitting;
+    private string? registeredName;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(Model);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            var result = await RegistrationService.RegisterAsync(Model);
+            if (result.Succeeded)
+            {
+                registeredName = $"{Model.FirstName} {Model.LastName}";
+                return;
+            }
+
+            foreach (var (key, messages) in result.Errors)
+            {
+                messageStore.Add(ToFieldIdentifier(key), messages);
+            }
+        }
+        catch (HttpRequestException)
+        {
+            messageStore.Add(new FieldIdentifier(Model, string.Empty), "Unable to reach the server. Please try again later.");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+
+        editContext.NotifyValidationStateChanged();
+    }
+
+    // Server error keys may use a different casing (e.g. camelCase), so map them back to model properties.
+    private FieldIdentifier ToFieldIdentifier(string key)
+    {
+        string[] fields =
+        [
+            nameof(RegistrationModel.FirstName),
+            nameof(RegistrationModel.LastName),
+            nameof(RegistrationModel.Email),
+            nameof(RegistrationModel.InviteCode)
+        ];
+
+        var field = fields.FirstOrDefault(f => string.Equals(f, key, StringComparison.OrdinalIgnoreCase));
+        return new FieldIdentifier(Model, field ?? string.Empty);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs e) => messageStore.Clear();
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        messageStore.Clear(e.FieldIdentifier);
+        messageStore.Clear(new FieldIdentifier(Model, string.Empty));
+    }
+
+    public void Dispose()
+    {
+        editContext.OnValidationRequested -= HandleValidationRequested;
+        editContext.OnFieldChanged -= HandleFieldChanged;
+    }
+}
