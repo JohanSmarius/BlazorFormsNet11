@@ -28,7 +28,10 @@ app.UseHttpsRedirection();
 
 app.MapStaticAssets();
 
-// RegistrationModel is validated automatically (AddValidation) before this handler runs.
+app.MapPost("/api/invite-codes/validate", async ([Microsoft.AspNetCore.Mvc.FromBody] string code, IRegistrationService registrationService, CancellationToken cancellationToken) =>
+    Results.Ok(await registrationService.IsInviteCodeAvailableAsync(code, cancellationToken)));
+
+// RegistrationModel is validated asynchronously (AddValidation) before this handler runs.
 app.MapPost("/api/registrations", async (RegistrationModel model, IRegistrationService registrationService, CancellationToken cancellationToken) =>
 {
     var result = await registrationService.RegisterAsync(model, cancellationToken);

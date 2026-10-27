@@ -5,8 +5,15 @@ namespace CustomerApp.Services;
 
 public sealed class ServerRegistrationService(InviteCodeStore inviteCodeStore, ILogger<ServerRegistrationService> logger) : IRegistrationService
 {
+    public Task<bool> IsInviteCodeAvailableAsync(string code, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(inviteCodeStore.IsAvailable(code));
+    }
+
     public Task<RegistrationResult> RegisterAsync(RegistrationModel model, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!inviteCodeStore.TryRedeem(model.InviteCode))
         {
             return Task.FromResult(RegistrationResult.Failed(

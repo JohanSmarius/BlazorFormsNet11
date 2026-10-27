@@ -14,6 +14,9 @@ public sealed class InviteCodeStore
             StringComparer.OrdinalIgnoreCase);
     }
 
+    public bool IsAvailable(string code) =>
+        !string.IsNullOrWhiteSpace(code) && availableCodes.ContainsKey(code.Trim());
+
     /// <summary>Atomically checks that the code is available and marks it as used. Returns false when the code is unknown or already used.</summary>
     public bool TryRedeem(string code) =>
         !string.IsNullOrWhiteSpace(code) && availableCodes.TryRemove(code.Trim(), out _);

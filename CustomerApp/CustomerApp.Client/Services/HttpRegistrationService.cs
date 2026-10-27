@@ -6,6 +6,13 @@ namespace CustomerApp.Client.Services;
 
 public sealed class HttpRegistrationService(HttpClient httpClient) : IRegistrationService
 {
+    public async Task<bool> IsInviteCodeAvailableAsync(string code, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsJsonAsync("api/invite-codes/validate", code, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<bool>(cancellationToken);
+    }
+
     public async Task<RegistrationResult> RegisterAsync(RegistrationModel model, CancellationToken cancellationToken = default)
     {
         using var response = await httpClient.PostAsJsonAsync("api/registrations", model, cancellationToken);

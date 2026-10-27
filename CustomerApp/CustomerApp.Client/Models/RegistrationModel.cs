@@ -24,6 +24,7 @@ public class RegistrationModel
 
     [Required(ErrorMessage = "Invite code is required.")]
     [StringLength(50, ErrorMessage = "Invite code cannot be longer than 50 characters.")]
+    [AvailableInviteCode]
     [Display(Name = "Invite code")]
     public string InviteCode { get; set; } = string.Empty;
 }
