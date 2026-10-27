@@ -21,25 +21,25 @@ else
         <ValidationSummary class="text-danger" role="alert" />
 
         <div class="mb-3">
-            <label for="firstName" class="form-label">First name</label>
+            <label for="firstName" class="form-label"><DisplayName For="@(() => Model.FirstName)" /></label>
             <InputText id="firstName" class="form-control" autocomplete="given-name" @bind-Value="Model.FirstName" />
             <ValidationMessage For="() => Model.FirstName" class="text-danger" />
         </div>
 
         <div class="mb-3">
-            <label for="lastName" class="form-label">Last name</label>
+            <label for="lastName" class="form-label"><DisplayName For="@(() => Model.LastName)" /></label>
             <InputText id="lastName" class="form-control" autocomplete="family-name" @bind-Value="Model.LastName" />
             <ValidationMessage For="() => Model.LastName" class="text-danger" />
         </div>
 
         <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
+            <label for="email" class="form-label"><DisplayName For="@(() => Model.Email)" /></label>
             <InputText id="email" type="email" class="form-control" autocomplete="email" @bind-Value="Model.Email" />
             <ValidationMessage For="() => Model.Email" class="text-danger" />
         </div>
 
         <div class="mb-3">
-            <label for="inviteCode" class="form-label">Invite code</label>
+            <label for="inviteCode" class="form-label"><DisplayName For="@(() => Model.InviteCode)" /></label>
             <InputText id="inviteCode" class="form-control" autocomplete="off" @bind-Value="Model.InviteCode" />
             <ValidationMessage For="() => Model.InviteCode" class="text-danger" />
         </div>
