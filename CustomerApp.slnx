@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CustomerApp/CustomerApp.Client/CustomerApp.Client.csproj" />
+  <Project Path="CustomerApp/CustomerApp/CustomerApp.csproj" />
+</Solution>
