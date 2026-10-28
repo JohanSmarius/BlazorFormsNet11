@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="First name" xml:space="preserve"><value>Voornaam</value></data>
+  <data name="Last name" xml:space="preserve"><value>Achternaam</value></data>
+  <data name="Email address" xml:space="preserve"><value>E-mailadres</value></data>
+  <data name="Invite code" xml:space="preserve"><value>Uitnodigingscode</value></data>
+  <data name="RequiredAttribute_Error" xml:space="preserve"><value>{0} is verplicht.</value></data>
+  <data name="StringLengthAttribute_Error" xml:space="preserve"><value>{0} mag niet langer zijn dan {1} tekens.</value></data>
+  <data name="EmailAddressAttribute_Error" xml:space="preserve"><value>Voer een geldig e-mailadres in.</value></data>
+  <data name="The invite code is invalid or has already been used." xml:space="preserve"><value>De uitnodigingscode is ongeldig of is al gebruikt.</value></data>
+  <data name="Unable to validate the invite code. Please try again later." xml:space="preserve"><value>De uitnodigingscode kan niet worden gecontroleerd. Probeer het later opnieuw.</value></data>
+  <data name="Unable to reach the server. Please try again later." xml:space="preserve"><value>De server is niet bereikbaar. Probeer het later opnieuw.</value></data>
+  <data name="Registration failed. Please try again later." xml:space="preserve"><value>De registratie is mislukt. Probeer het later opnieuw.</value></data>
+</root>

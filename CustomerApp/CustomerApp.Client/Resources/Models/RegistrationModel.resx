@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="First name" xml:space="preserve"><value>First name</value></data>
+  <data name="Last name" xml:space="preserve"><value>Last name</value></data>
+  <data name="Email address" xml:space="preserve"><value>Email address</value></data>
+  <data name="Invite code" xml:space="preserve"><value>Invite code</value></data>
+  <data name="RequiredAttribute_Error" xml:space="preserve"><value>{0} is required.</value></data>
+  <data name="StringLengthAttribute_Error" xml:space="preserve"><value>{0} cannot be longer than {1} characters.</value></data>
+  <data name="EmailAddressAttribute_Error" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="The invite code is invalid or has already been used." xml:space="preserve"><value>The invite code is invalid or has already been used.</value></data>
+  <data name="Unable to validate the invite code. Please try again later." xml:space="preserve"><value>Unable to validate the invite code. Please try again later.</value></data>
+  <data name="Unable to reach the server. Please try again later." xml:space="preserve"><value>Unable to reach the server. Please try again later.</value></data>
+  <data name="Registration failed. Please try again later." xml:space="preserve"><value>Registration failed. Please try again later.</value></data>
+</root>

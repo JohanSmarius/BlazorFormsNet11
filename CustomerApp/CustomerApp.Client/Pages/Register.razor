@@ -3,15 +3,16 @@
 @using CustomerApp.Client.Services
 @implements IDisposable
 @inject IRegistrationService RegistrationService
+@inject Microsoft.Extensions.Localization.IStringLocalizer<RegistrationModel> Localizer
 
 <PageTitle>Register</PageTitle>
 
 <h1>Register</h1>
 
-@if (registeredName is not null)
+@if (RegisteredName is not null)
 {
     <div class="alert alert-success" role="status">
-        Thank you @registeredName, your registration was successful.
+        Thank you @RegisteredName, your registration was successful.
     </div>
 }
 else
@@ -53,14 +54,17 @@ else
 }
 
 @code {
-    private RegistrationModel Model { get; set; } = new();
+    [PersistentState]
+    public RegistrationModel Model { get; set; } = default!;
     private EditContext editContext = default!;
     private ValidationMessageStore messageStore = default!;
     private bool isSubmitting;
-    private string? registeredName;
+    [PersistentState]
+    public string? RegisteredName { get; set; }
 
     protected override void OnInitialized()
     {
+        Model ??= new();
         editContext = new EditContext(Model);
         messageStore = new ValidationMessageStore(editContext);
         editContext.OnValidationRequested += HandleValidationRequested;
@@ -85,7 +89,7 @@ else
             var result = await RegistrationService.RegisterAsync(Model);
             if (result.Succeeded)
             {
-                registeredName = $"{Model.FirstName} {Model.LastName}";
+                RegisteredName = $"{Model.FirstName} {Model.LastName}";
                 return;
             }
 
@@ -96,7 +100,7 @@ else
         }
         catch (HttpRequestException)
         {
-            messageStore.Add(new FieldIdentifier(Model, string.Empty), "Unable to reach the server. Please try again later.");
+            messageStore.Add(new FieldIdentifier(Model, string.Empty), Localizer["Unable to reach the server. Please try again later."]);
         }
         finally
         {

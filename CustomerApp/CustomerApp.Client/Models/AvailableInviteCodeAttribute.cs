@@ -1,16 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using CustomerApp.Client.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 
 namespace CustomerApp.Client.Models;
 
 public sealed class AvailableInviteCodeAttribute : AsyncValidationAttribute
 {
-    public AvailableInviteCodeAttribute()
-    {
-        ErrorMessage = "The invite code is invalid or has already been used.";
-    }
-
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,
@@ -22,16 +18,18 @@ public sealed class AvailableInviteCodeAttribute : AsyncValidationAttribute
         }
 
         var registrationService = validationContext.GetRequiredService<IRegistrationService>();
+        // Localize each outcome separately so a common attribute template doesn't mask network failures.
+        var localizer = validationContext.GetRequiredService<IStringLocalizer<RegistrationModel>>();
         try
         {
             return await registrationService.IsInviteCodeAvailableAsync(code, cancellationToken)
                 ? ValidationResult.Success
-                : new ValidationResult(FormatErrorMessage(validationContext.DisplayName), [validationContext.MemberName!]);
+                : new ValidationResult(localizer["The invite code is invalid or has already been used."], [validationContext.MemberName!]);
         }
         catch (HttpRequestException)
         {
             return new ValidationResult(
-                "Unable to validate the invite code. Please try again later.",
+                localizer["Unable to validate the invite code. Please try again later."],
                 [validationContext.MemberName!]);
         }
     }

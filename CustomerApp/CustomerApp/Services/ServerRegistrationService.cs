@@ -1,9 +1,10 @@
 using CustomerApp.Client.Models;
 using CustomerApp.Client.Services;
+using Microsoft.Extensions.Localization;
 
 namespace CustomerApp.Services;
 
-public sealed class ServerRegistrationService(InviteCodeStore inviteCodeStore, ILogger<ServerRegistrationService> logger) : IRegistrationService
+public sealed class ServerRegistrationService(InviteCodeStore inviteCodeStore, ILogger<ServerRegistrationService> logger, IStringLocalizer<RegistrationModel> localizer) : IRegistrationService
 {
     public Task<bool> IsInviteCodeAvailableAsync(string code, CancellationToken cancellationToken = default)
     {
@@ -18,7 +19,7 @@ public sealed class ServerRegistrationService(InviteCodeStore inviteCodeStore, I
         {
             return Task.FromResult(RegistrationResult.Failed(
                 nameof(RegistrationModel.InviteCode),
-                "The invite code is invalid or has already been used."));
+                localizer["The invite code is invalid or has already been used."]));
         }
 
         logger.LogInformation("Registered {FirstName} {LastName} using an invite code.", model.FirstName, model.LastName);

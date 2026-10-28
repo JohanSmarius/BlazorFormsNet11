@@ -2,6 +2,7 @@ using CustomerApp.Client.Models;
 using CustomerApp.Client.Services;
 using CustomerApp.Components;
 using CustomerApp.Services;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddRegistrationValidation();
 builder.Services.AddValidation();
+builder.Services.Configure<RequestLocalizationOptions>(options => options
+    .SetDefaultCulture("en")
+    .AddSupportedCultures("en", "nl")
+    .AddSupportedUICultures("en", "nl"));
 builder.Services.AddSingleton<InviteCodeStore>();
 builder.Services.AddScoped<IRegistrationService, ServerRegistrationService>();
 
@@ -25,6 +31,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+app.UseRequestLocalization();
 
 app.MapStaticAssets();
 
@@ -39,6 +46,7 @@ app.MapPost("/api/registrations", async (RegistrationModel model, IRegistrationS
 });
 
 app.MapRazorComponents<App>()
+    .WithBrowserOptions(options => options.AddAutoPause(pause => pause.HiddenDelay = TimeSpan.FromSeconds(1)))
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(CustomerApp.Client._Imports).Assembly);

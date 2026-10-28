@@ -1,0 +1,16 @@
+.forecast-viewport {
+    height: 360px;
+    overflow: auto;
+}
+
+.forecast-viewport table {
+    table-layout: fixed;
+    min-width: 480px;
+}
+
+.forecast-viewport ::deep td {
+    height: 41px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

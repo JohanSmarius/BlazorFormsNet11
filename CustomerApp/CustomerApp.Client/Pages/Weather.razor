@@ -1,10 +1,15 @@
 ﻿@page "/weather"
+@using System.ComponentModel.DataAnnotations
 
 <PageTitle>Weather</PageTitle>
 
 <h1>Weather</h1>
 
-<p>This component demonstrates showing data.</p>
+<p>
+    This component demonstrates .NET 11's <code>Virtualize.AnchorMode</code>.
+    Start pins new forecasts at the top; End follows new forecasts at the bottom.
+    Scroll away from an edge to stop following it, or select None to disable edge pinning.
+</p>
 
 @if (Forecasts is null)
 {
@@ -12,35 +17,86 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in Forecasts)
-            {
+    <div class="mb-3">
+        <label for="anchor-mode" class="form-label">Anchor mode</label>
+        <select id="anchor-mode" class="form-select" value="@AnchorMode" @onchange="ChangeAnchorMode">
+            <option value="@VirtualizeAnchorMode.None">None</option>
+            <option value="@VirtualizeAnchorMode.Start">Start</option>
+            <option value="@VirtualizeAnchorMode.End">End</option>
+            <option value="@(VirtualizeAnchorMode.Start | VirtualizeAnchorMode.End)">Start | End</option>
+        </select>
+    </div>
+
+    <h2>Create a forecast</h2>
+    <EditForm Model="NewForecast" OnValidSubmit="AddForecast" FormName="new-forecast">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+        <div class="row g-3 mb-3">
+            <div class="col-sm">
+                <label for="forecast-date" class="form-label">Date</label>
+                <InputDate id="forecast-date" class="form-control" @bind-Value="NewForecast.Date" />
+            </div>
+            <div class="col-sm">
+                <label for="forecast-temperature" class="form-label">Temperature (C)</label>
+                <InputNumber id="forecast-temperature" class="form-control" @bind-Value="NewForecast.TemperatureC" />
+            </div>
+            <div class="col-sm">
+                <label for="forecast-summary" class="form-label">Summary</label>
+                <InputText id="forecast-summary" class="form-control" @bind-Value="NewForecast.Summary" maxlength="80" />
+            </div>
+            <div class="col-sm">
+                <label for="forecast-position" class="form-label">Insert at</label>
+                <InputSelect id="forecast-position" class="form-select" @bind-Value="AddAtStart">
+                    <option value="false">End</option>
+                    <option value="true">Start</option>
+                </InputSelect>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3">Add forecast</button>
+    </EditForm>
+
+    <p role="status">@Forecasts.Length forecasts. New forecasts are kept for this session, including circuit pauses.</p>
+    <div class="forecast-viewport" tabindex="0" role="region" aria-label="Weather forecasts">
+        <table class="table mb-0">
+            <thead>
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <th>Date</th>
+                    <th aria-label="Temperature in Celsius">Temp. (C)</th>
+                    <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
+                    <th>Summary</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <Virtualize Items="Forecasts" Context="forecast" AnchorMode="AnchorMode" SpacerElement="tr" ItemSize="41">
+                    <tr @key="forecast.Id">
+                        <td>@forecast.Date.ToShortDateString()</td>
+                        <td>@forecast.TemperatureC</td>
+                        <td>@forecast.TemperatureF</td>
+                        <td>@forecast.Summary</td>
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
     [PersistentState(AllowUpdates = true)]
     public WeatherForecast[]? Forecasts { get; set; }
 
+    [PersistentState]
+    public VirtualizeAnchorMode AnchorMode { get; set; }
+
+    [PersistentState]
+    public bool AddAtStart { get; set; }
+
+    [PersistentState]
+    public WeatherForecast NewForecast { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
+        NewForecast ??= new WeatherForecast { Date = DateOnly.FromDateTime(DateTime.Today) };
+
         if (Forecasts is null)
         {
             // Simulate asynchronous loading to demonstrate a loading indicator
@@ -48,7 +104,7 @@ else
 
             var startDate = DateOnly.FromDateTime(DateTime.Now);
             var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-            Forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            Forecasts = Enumerable.Range(1, 50).Select(index => new WeatherForecast
             {
                 Date = startDate.AddDays(index),
                 TemperatureC = Random.Shared.Next(-20, 55),
@@ -57,10 +113,36 @@ else
         }
     }
 
+    private void ChangeAnchorMode(ChangeEventArgs args)
+    {
+        // The default enum binder rejects unnamed flag combinations such as Start | End.
+        if (Enum.TryParse<VirtualizeAnchorMode>(args.Value?.ToString(), out var mode))
+        {
+            AnchorMode = mode;
+        }
+    }
+
+    private void AddForecast()
+    {
+        if (Forecasts is null)
+        {
+            return;
+        }
+
+        Forecasts = AddAtStart ? [NewForecast, .. Forecasts] : [.. Forecasts, NewForecast];
+        NewForecast = new WeatherForecast { Date = NewForecast.Date };
+    }
+
     public class WeatherForecast
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
         public DateOnly Date { get; set; }
+
+        [Range(-100, 100, ErrorMessage = "Temperature must be between -100 and 100 C.")]
         public int TemperatureC { get; set; }
+
+        [Required]
+        [StringLength(80)]
         public string? Summary { get; set; }
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }

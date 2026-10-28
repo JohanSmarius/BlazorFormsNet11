@@ -1,21 +1,33 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using CustomerApp.Client.Models;
+using Microsoft.Extensions.Localization;
 
 namespace CustomerApp.Client.Services;
 
-public sealed class HttpRegistrationService(HttpClient httpClient) : IRegistrationService
+public sealed class HttpRegistrationService(HttpClient httpClient, IStringLocalizer<RegistrationModel> localizer) : IRegistrationService
 {
     public async Task<bool> IsInviteCodeAvailableAsync(string code, CancellationToken cancellationToken = default)
     {
-        using var response = await httpClient.PostAsJsonAsync("api/invite-codes/validate", code, cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/invite-codes/validate")
+        {
+            Content = JsonContent.Create(code)
+        };
+        request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.Name);
+        using var response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<bool>(cancellationToken);
     }
 
     public async Task<RegistrationResult> RegisterAsync(RegistrationModel model, CancellationToken cancellationToken = default)
     {
-        using var response = await httpClient.PostAsJsonAsync("api/registrations", model, cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/registrations")
+        {
+            Content = JsonContent.Create(model)
+        };
+        request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.Name);
+        using var response = await httpClient.SendAsync(request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -31,7 +43,7 @@ public sealed class HttpRegistrationService(HttpClient httpClient) : IRegistrati
             }
         }
 
-        return RegistrationResult.Failed(string.Empty, "Registration failed. Please try again later.");
+        return RegistrationResult.Failed(string.Empty, localizer["Registration failed. Please try again later."]);
     }
 
     private sealed class ValidationProblemResponse

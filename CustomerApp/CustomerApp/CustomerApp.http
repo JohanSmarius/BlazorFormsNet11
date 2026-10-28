@@ -1,0 +1,49 @@
+@CustomerApp_HostAddress = http://localhost:5300
+
+### English validation messages (HTTP 400)
+POST {{CustomerApp_HostAddress}}/api/registrations
+Content-Type: application/json
+Accept-Language: en
+
+{
+  "firstName": "",
+  "lastName": "",
+  "email": "invalid",
+  "inviteCode": ""
+}
+
+### Dutch validation messages, including the async invite-code rule (HTTP 400)
+POST {{CustomerApp_HostAddress}}/api/registrations
+Content-Type: application/json
+Accept-Language: nl-NL
+
+{
+  "firstName": "",
+  "lastName": "",
+  "email": "invalid",
+  "inviteCode": "NOT-A-CODE"
+}
+
+### Query-string culture overrides Accept-Language (English errors, HTTP 400)
+POST {{CustomerApp_HostAddress}}/api/registrations?culture=en
+Content-Type: application/json
+Accept-Language: nl
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test@example.com",
+  "inviteCode": "NOT-A-CODE"
+}
+
+### Non-consuming availability check (JSON boolean)
+POST {{CustomerApp_HostAddress}}/api/invite-codes/validate
+Content-Type: application/json
+
+"WELCOME-2026"
+
+### Dutch form labels and validation; reload to change the interactive culture
+GET {{CustomerApp_HostAddress}}/register?culture=nl
+
+### English form labels and validation
+GET {{CustomerApp_HostAddress}}/register?culture=en
