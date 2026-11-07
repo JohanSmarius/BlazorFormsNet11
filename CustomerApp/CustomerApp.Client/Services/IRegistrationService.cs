@@ -8,4 +8,6 @@ public interface IRegistrationService
     Task<bool> IsInviteCodeAvailableAsync(string code, CancellationToken cancellationToken = default);
 
     Task<RegistrationResult> RegisterAsync(RegistrationModel model, CancellationToken cancellationToken = default);
+
+    Task<bool> IsEmailAvailableAsync(string email, CancellationToken cancellationToken = default);
 }

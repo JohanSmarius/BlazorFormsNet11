@@ -46,6 +46,11 @@ public sealed class HttpRegistrationService(HttpClient httpClient, IStringLocali
         return RegistrationResult.Failed(string.Empty, localizer["Registration failed. Please try again later."]);
     }
 
+    public Task<bool> IsEmailAvailableAsync(string email, CancellationToken cancellationToken = default) =>
+        httpClient.GetFromJsonAsync<bool>(
+            $"api/registrations/email-available?email={Uri.EscapeDataString(email)}",
+            cancellationToken);
+
     private sealed class ValidationProblemResponse
     {
         public Dictionary<string, string[]>? Errors { get; set; }

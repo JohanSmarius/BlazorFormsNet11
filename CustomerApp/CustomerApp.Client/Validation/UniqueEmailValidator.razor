@@ -1,0 +1,77 @@
+@using System.ComponentModel.DataAnnotations
+@using CustomerApp.Client.Models
+@using CustomerApp.Client.Services
+@implements IDisposable
+@inject IRegistrationService RegistrationService
+@inject Microsoft.Extensions.Localization.IStringLocalizer<RegistrationModel> Localizer
+
+@* Checks asynchronously that the email address isn't registered yet, both per field as the
+   user edits the Email field and for the whole form on submit. *@
+
+@code {
+    private static readonly EmailAddressAttribute emailFormat = new();
+
+    [CascadingParameter]
+    private EditContext? CurrentEditContext { get; set; }
+
+    [Parameter, EditorRequired]
+    public RegistrationModel Model { get; set; } = default!;
+
+    private ValidationMessageStore? messages;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(CurrentEditContext);
+        messages = new ValidationMessageStore(CurrentEditContext);
+        CurrentEditContext.OnValidationRequested += OnValidationRequested;
+        CurrentEditContext.OnFieldChanged += OnFieldChanged;
+    }
+
+    // EditForm awaits this before invoking OnValidSubmit or OnInvalidSubmit.
+    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e) =>
+        e.AddAsyncValidator(token => CheckAsync(CurrentEditContext!.Field(nameof(RegistrationModel.Email)), token));
+
+    // A new registration supersedes and cancels any check already in flight for the field.
+    private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (e.FieldIdentifier.FieldName != nameof(RegistrationModel.Email))
+        {
+            return;
+        }
+
+        CurrentEditContext!.RegisterAsyncFieldValidator(
+            e.FieldIdentifier,
+            token => CheckAsync(e.FieldIdentifier, token));
+    }
+
+    private async Task CheckAsync(FieldIdentifier field, CancellationToken token)
+    {
+        messages!.Clear(field);
+        CurrentEditContext!.NotifyValidationStateChanged();
+
+        // Required/format errors are reported by DataAnnotationsValidator; skip the remote call.
+        var email = Model.Email?.Trim();
+        if (string.IsNullOrEmpty(email) || !emailFormat.IsValid(email))
+        {
+            return;
+        }
+
+        var available = await RegistrationService.IsEmailAvailableAsync(email, token);
+
+        if (!available)
+        {
+            messages.Add(field, Localizer["This email address is already registered."]);
+        }
+
+        CurrentEditContext.NotifyValidationStateChanged();
+    }
+
+    public void Dispose()
+    {
+        if (CurrentEditContext is not null)
+        {
+            CurrentEditContext.OnValidationRequested -= OnValidationRequested;
+            CurrentEditContext.OnFieldChanged -= OnFieldChanged;
+        }
+    }
+}

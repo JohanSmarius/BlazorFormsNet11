@@ -1,6 +1,7 @@
 @page "/register"
 @using CustomerApp.Client.Models
 @using CustomerApp.Client.Services
+@using CustomerApp.Client.Validation
 @implements IDisposable
 @inject IRegistrationService RegistrationService
 @inject Microsoft.Extensions.Localization.IStringLocalizer<RegistrationModel> Localizer
@@ -19,6 +20,7 @@ else
 {
     <EditForm EditContext="editContext" OnSubmit="HandleSubmit" FormName="register">
         <DataAnnotationsValidator />
+        <UniqueEmailValidator Model="Model" />
         <ValidationSummary class="text-danger" role="alert" />
 
         <fieldset disabled="@isSubmitting">
@@ -34,10 +36,19 @@ else
                 <ValidationMessage For="() => Model.LastName" class="text-danger" />
             </div>
 
+
             <div class="mb-3">
                 <label for="email" class="form-label"><DisplayName For="@(() => Model.Email)" /></label>
                 <InputText id="email" type="email" class="form-control" autocomplete="email" @bind-Value="Model.Email" />
                 <ValidationMessage For="() => Model.Email" class="text-danger" />
+                @if (editContext.IsValidationPending(EmailField))
+                {
+                    <div class="form-text" role="status">@Localizer["Checking email address availability..."]</div>
+                }
+                else if (editContext.IsValidationFaulted(EmailField))
+                {
+                    <div class="text-danger" role="alert">@Localizer["Unable to verify the email address. Please try again later."]</div>
+                }
             </div>
 
             <div class="mb-3">
@@ -46,7 +57,12 @@ else
                 <ValidationMessage For="() => Model.InviteCode" class="text-danger" />
             </div>
 
-            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+            @if (editContext.IsValidationFaulted())
+            {
+                <div class="alert alert-danger" role="alert">@Localizer["Unable to validate the form. Please try again later."]</div>
+            }
+
+            <button type="submit" class="btn btn-primary" disabled="@(isSubmitting || editContext.IsValidationPending())">
                 @(isSubmitting ? "Registering..." : "Register")
             </button>
         </fieldset>
@@ -62,6 +78,8 @@ else
     [PersistentState]
     public string? RegisteredName { get; set; }
 
+    private FieldIdentifier EmailField => editContext.Field(nameof(RegistrationModel.Email));
+
     protected override void OnInitialized()
     {
         Model ??= new();
@@ -69,6 +87,7 @@ else
         messageStore = new ValidationMessageStore(editContext);
         editContext.OnValidationRequested += HandleValidationRequested;
         editContext.OnFieldChanged += HandleFieldChanged;
+        editContext.OnValidationStateChanged += HandleValidationStateChanged;
     }
 
     private async Task HandleSubmit()
@@ -133,9 +152,14 @@ else
         messageStore.Clear(new FieldIdentifier(Model, string.Empty));
     }
 
+    // Re-render the pending/faulted indicators, which aren't updated by the built-in validation components.
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) =>
+        _ = InvokeAsync(StateHasChanged);
+
     public void Dispose()
     {
         editContext.OnValidationRequested -= HandleValidationRequested;
         editContext.OnFieldChanged -= HandleFieldChanged;
+        editContext.OnValidationStateChanged -= HandleValidationStateChanged;
     }
 }

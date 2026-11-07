@@ -18,6 +18,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options => options
     .AddSupportedCultures("en", "nl")
     .AddSupportedUICultures("en", "nl"));
 builder.Services.AddSingleton<InviteCodeStore>();
+builder.Services.AddSingleton<RegisteredEmailStore>();
 builder.Services.AddScoped<IRegistrationService, ServerRegistrationService>();
 
 var app = builder.Build();
@@ -44,6 +45,9 @@ app.MapPost("/api/registrations", async (RegistrationModel model, IRegistrationS
     var result = await registrationService.RegisterAsync(model, cancellationToken);
     return result.Succeeded ? Results.Ok() : Results.ValidationProblem(result.Errors);
 });
+
+app.MapGet("/api/registrations/email-available", async (string email, IRegistrationService registrationService, CancellationToken cancellationToken) =>
+    await registrationService.IsEmailAvailableAsync(email, cancellationToken));
 
 app.MapRazorComponents<App>()
     .WithBrowserOptions(options => options.AddAutoPause(pause => pause.HiddenDelay = TimeSpan.FromSeconds(1)))

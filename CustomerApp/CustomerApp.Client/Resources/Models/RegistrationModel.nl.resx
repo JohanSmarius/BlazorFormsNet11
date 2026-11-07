@@ -15,4 +15,8 @@
   <data name="Unable to validate the invite code. Please try again later." xml:space="preserve"><value>De uitnodigingscode kan niet worden gecontroleerd. Probeer het later opnieuw.</value></data>
   <data name="Unable to reach the server. Please try again later." xml:space="preserve"><value>De server is niet bereikbaar. Probeer het later opnieuw.</value></data>
   <data name="Registration failed. Please try again later." xml:space="preserve"><value>De registratie is mislukt. Probeer het later opnieuw.</value></data>
+  <data name="This email address is already registered." xml:space="preserve"><value>Dit e-mailadres is al geregistreerd.</value></data>
+  <data name="Checking email address availability..." xml:space="preserve"><value>Beschikbaarheid van het e-mailadres wordt gecontroleerd...</value></data>
+  <data name="Unable to verify the email address. Please try again later." xml:space="preserve"><value>Het e-mailadres kan niet worden gecontroleerd. Probeer het later opnieuw.</value></data>
+  <data name="Unable to validate the form. Please try again later." xml:space="preserve"><value>Het formulier kan niet worden gevalideerd. Probeer het later opnieuw.</value></data>
 </root>

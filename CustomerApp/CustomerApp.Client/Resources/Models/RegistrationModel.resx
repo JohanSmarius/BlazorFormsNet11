@@ -15,4 +15,8 @@
   <data name="Unable to validate the invite code. Please try again later." xml:space="preserve"><value>Unable to validate the invite code. Please try again later.</value></data>
   <data name="Unable to reach the server. Please try again later." xml:space="preserve"><value>Unable to reach the server. Please try again later.</value></data>
   <data name="Registration failed. Please try again later." xml:space="preserve"><value>Registration failed. Please try again later.</value></data>
+  <data name="This email address is already registered." xml:space="preserve"><value>This email address is already registered.</value></data>
+  <data name="Checking email address availability..." xml:space="preserve"><value>Checking email address availability...</value></data>
+  <data name="Unable to verify the email address. Please try again later." xml:space="preserve"><value>Unable to verify the email address. Please try again later.</value></data>
+  <data name="Unable to validate the form. Please try again later." xml:space="preserve"><value>Unable to validate the form. Please try again later.</value></data>
 </root>
